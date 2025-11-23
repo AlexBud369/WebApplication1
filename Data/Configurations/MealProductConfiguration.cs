@@ -25,7 +25,7 @@ public class MealProductConfiguration : IEntityTypeConfiguration<MealProduct>
         builder.HasOne(mp => mp.Product)
                .WithMany(p => p.MealProducts)
                .HasForeignKey(mp => mp.ProductId)
-               .OnDelete(DeleteBehavior.Restrict);
+               .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(mp => new { mp.MealId, mp.ProductId })
                .IsUnique();
