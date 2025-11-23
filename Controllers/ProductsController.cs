@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
 
 namespace WebApplication1.Controllers;
@@ -18,6 +19,7 @@ public class ProductsController : ControllerBase
     public IActionResult GetProducts()
     {
         var products = _productRepository.GetAllProducts();
+
         return Ok(products);
     }
 
@@ -25,24 +27,41 @@ public class ProductsController : ControllerBase
     public IActionResult GetProduct(Guid id)
     {
         var product = _productRepository.GetProductById(id);
-        if (product == null)
-        {
-            return NotFound();
-        }
+
         return Ok(product);
     }
 
-    [HttpGet("category/{category}")]
-    public IActionResult GetProductsByCategory(string category)
+    [HttpPost]
+    public IActionResult CreateProduct([FromBody] CreateProductDto productDto)
     {
-        var products = _productRepository.GetProductsByCategory(category);
-        return Ok(products);
+        if (productDto is null) {
+            return BadRequest("ProductForCreationDto object is null");
+        }
+            
+
+        var createdProduct = _productRepository.CreateProduct(productDto);
+
+        return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, createdProduct);
     }
 
-    [HttpGet("summary")]
-    public IActionResult GetProductSummaries()
+    [HttpPut("{id}")]
+    public IActionResult UpdateProduct(Guid id, [FromBody] UpdateProductDto productDto)
     {
-        var summaries = _productRepository.GetProductSummaries();
-        return Ok(summaries);
+        if (productDto is null) {
+            return BadRequest("ProductForUpdateDto object is null");
+        }
+            
+
+        _productRepository.UpdateProduct(id, productDto);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteProduct(Guid id)
+    {
+        _productRepository.DeleteProduct(id);
+
+        return NoContent();
     }
 }

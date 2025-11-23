@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
 
 namespace WebApplication1.Controllers;
@@ -18,6 +19,7 @@ public class DietsController : ControllerBase
     public IActionResult GetDiets()
     {
         var diets = _dietRepository.GetAllDiets();
+
         return Ok(diets);
     }
 
@@ -25,10 +27,7 @@ public class DietsController : ControllerBase
     public IActionResult GetDiet(Guid id)
     {
         var diet = _dietRepository.GetDietById(id);
-        if (diet == null)
-        {
-            return NotFound();
-        }
+
         return Ok(diet);
     }
 
@@ -36,6 +35,41 @@ public class DietsController : ControllerBase
     public IActionResult GetUserDiets(Guid userId)
     {
         var diets = _dietRepository.GetDietsByUserId(userId);
+
         return Ok(diets);
+    }
+
+    [HttpPost]
+    public IActionResult CreateDiet([FromBody] CreateDietDto dietDto)
+    {
+        if (dietDto is null) {
+            return BadRequest("DietForCreationDto object is null");
+        }
+            
+
+        var createdDiet = _dietRepository.CreateDiet(dietDto);
+
+        return CreatedAtAction(nameof(GetDiet), new { id = createdDiet.Id }, createdDiet);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult UpdateDiet(Guid id, [FromBody] UpdateDietDto dietDto)
+    {
+        if (dietDto is null) {
+            return BadRequest("DietForUpdateDto object is null");
+        }
+            
+
+        _dietRepository.UpdateDiet(id, dietDto);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteDiet(Guid id)
+    {
+        _dietRepository.DeleteDiet(id);
+
+        return NoContent();
     }
 }

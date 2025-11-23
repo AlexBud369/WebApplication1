@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
 
 namespace WebApplication1.Controllers;
@@ -25,17 +26,41 @@ public class UsersController : ControllerBase
     public IActionResult GetUser(Guid id)
     {
         var user = _userRepository.GetUserById(id);
-        if (user == null)
-        {
-            return NotFound();
-        }
         return Ok(user);
     }
 
-    [HttpGet("summary")]
-    public IActionResult GetUserSummaries()
+
+    [HttpPost]
+    public IActionResult CreateUser([FromBody] CreateUserDto userDto)
     {
-        var summaries = _userRepository.GetUserSummaries();
-        return Ok(summaries);
+        if (userDto is null) {
+            return BadRequest("UserForCreationDto object is null");
+        }
+           
+
+        var createdUser = _userRepository.CreateUser(userDto);
+
+        return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, createdUser);
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult UpdateUser(Guid id, [FromBody] UpdateUserDto userDto)
+    {
+        if (userDto is null) {
+            return BadRequest("UserForUpdateDto object is null");
+        }
+          
+
+        _userRepository.UpdateUser(id, userDto);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public IActionResult DeleteUser(Guid id)
+    {
+        _userRepository.DeleteUser(id);
+
+        return NoContent();
     }
 }
