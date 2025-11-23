@@ -14,3 +14,7 @@ public record CreateProductNutrientDto(
     Guid NutrientId,
     decimal AmountPer100g
 );
+
+public record UpdateProductNutrientDto(
+    decimal AmountPer100g
+);

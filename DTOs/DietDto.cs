@@ -1,5 +1,20 @@
 ﻿namespace WebApplication1.DTOs;
 
+public record CreateDietDto(
+        Guid UserId,
+        DateOnly StartDate,
+        DateOnly EndDate,
+        decimal TotalCalories,
+        int NutrientBalanceScore
+    );
+
+public record UpdateDietDto(
+    DateOnly StartDate,
+    DateOnly EndDate,
+    decimal TotalCalories,
+    int NutrientBalanceScore
+);
+
 public record DietDto(
     Guid Id,
     Guid UserId,

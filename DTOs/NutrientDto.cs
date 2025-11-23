@@ -6,14 +6,14 @@ public record NutrientDto(
     string Unit
 );
 
-public record NutrientSummaryDto(
-    Guid Id,
-    string Name,
-    string Unit
-);
-
 public record CreateNutrientDto(
     string Name,
     string Category,
     string Unit
 );
+
+public record UpdateNutrientDto(
+        string Name,
+        string Category,
+        string Unit
+    );
