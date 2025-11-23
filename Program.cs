@@ -1,12 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using WebApplication1.Data;
+using WebApplication1.Mapping;
 using WebApplication1.Repositories.Contracts;
 using WebApplication1.Repositories.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
