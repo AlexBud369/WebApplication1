@@ -6,6 +6,8 @@ public interface IMealRepository : IRepositoryBase<Models.Meal>
 {
     MealDto GetMealById(Guid id);
     IReadOnlyCollection<MealDto> GetAllMeals();
-    IReadOnlyCollection<MealDto> GetMealsByDietId(Guid dietId);
-    MealWithProductsDto GetMealWithProducts(Guid id);
+
+    MealDto CreateMeal(CreateMealDto mealDto);
+    void UpdateMeal(Guid id, UpdateMealDto mealDto);
+    void DeleteMeal(Guid id);
 }

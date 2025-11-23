@@ -1,40 +1,63 @@
-﻿using WebApplication1.Data;
+﻿using AutoMapper;
+using WebApplication1.Data;
 using WebApplication1.DTOs;
-using WebApplication1.Repositories.Contracts;
+using WebApplication1.Exceptions;
 using WebApplication1.Models;
+using WebApplication1.Repositories.Contracts;
 
 namespace WebApplication1.Repositories.Implementations;
 
 public class UserRepository : RepositoryBase<User>, IUserRepository
 {
-    public UserRepository(AppDbContext context) : base(context) { }
+    private readonly IMapper _mapper;
+    public UserRepository(AppDbContext context, IMapper mapper) : base(context) {
+        _mapper = mapper;
+    }
 
     public UserDto GetUserById(Guid id)
     {
-        return FindByCondition(u => u.Id == id, trackChanges: false)
-            .Select(u => new UserDto(
-                u.Id, u.Email, u.BirthDate, u.Gender, u.Weight, u.Height,
-                u.ActivityLevel, u.GoalType, u.DietaryRestrictions, u.CreatedAt
-            ))
-            .FirstOrDefault();
+        var user = FindByCondition(u => u.Id == id, trackChanges: false)
+                .FirstOrDefault();
+        if (user is null) {
+            throw new UserNotFoundException(id); 
+        }
+
+        return _mapper.Map<UserDto>(user);
     }
 
     public IReadOnlyCollection<UserDto> GetAllUsers()
     {
-        return FindAll(trackChanges: false)
-            .Select(u => new UserDto(
-                u.Id, u.Email, u.BirthDate, u.Gender, u.Weight, u.Height,
-                u.ActivityLevel, u.GoalType, u.DietaryRestrictions, u.CreatedAt
-            ))
-            .ToList()
-            .AsReadOnly();
+        var users = FindAll(trackChanges: false).ToList();
+
+        return _mapper.Map<IReadOnlyCollection<UserDto>>(users);
     }
 
-    public IReadOnlyCollection<UserSummaryDto> GetUserSummaries()
+    public UserDto CreateUser(CreateUserDto userDto)
     {
-        return FindAll(trackChanges: false)
-            .Select(u => new UserSummaryDto(u.Id, u.Email, u.Gender, u.Weight, u.Height))
-            .ToList()
-            .AsReadOnly();
+        var userEntity = _mapper.Map<User>(userDto);
+        Create(userEntity);
+
+        return _mapper.Map<UserDto>(userEntity);
+    }
+
+    public void UpdateUser(Guid id, UpdateUserDto userDto)
+    {
+        var userEntity = FindByCondition(u => u.Id == id, trackChanges: true)
+            .FirstOrDefault();
+        if (userEntity is null) { 
+            throw new UserNotFoundException(id);
+        }
+        _mapper.Map(userDto, userEntity);
+        Update(userEntity);
+    }
+
+    public void DeleteUser(Guid id)
+    {
+        var userEntity = FindByCondition(u => u.Id == id, trackChanges: false)
+            .FirstOrDefault();
+        if (userEntity is null) { 
+            throw new UserNotFoundException(id);
+        }
+        Delete(userEntity);
     }
 }

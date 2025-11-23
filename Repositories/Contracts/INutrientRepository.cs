@@ -6,5 +6,7 @@ public interface INutrientRepository : IRepositoryBase<Models.Nutrient>
 {
     NutrientDto GetNutrientById(Guid id);
     IReadOnlyCollection<NutrientDto> GetAllNutrients();
-    IReadOnlyCollection<NutrientSummaryDto> GetNutrientSummaries();
+    NutrientDto CreateNutrient(CreateNutrientDto nutrientDto);
+    void UpdateNutrient(Guid id, UpdateNutrientDto nutrientDto);
+    void DeleteNutrient(Guid id);
 }

@@ -6,4 +6,9 @@ public interface IProductNutrientRepository : IRepositoryBase<Models.ProductNutr
 {
     IReadOnlyCollection<ProductNutrientDto> GetProductNutrientsByProductId(Guid productId);
     ProductNutrientDto GetProductNutrientById(Guid id);
+
+    ProductNutrientDto CreateProductNutrient(CreateProductNutrientDto productNutrientDto);
+    void UpdateProductNutrient(Guid id, UpdateProductNutrientDto productNutrientDto);
+
+    void DeleteProductNutrient(Guid id);
 }

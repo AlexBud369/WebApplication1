@@ -2,50 +2,65 @@
 using WebApplication1.Repositories.Contracts;
 using WebApplication1.Models;
 using WebApplication1.Data;
+using AutoMapper;
+using WebApplication1.Exceptions;
 
 namespace WebApplication1.Repositories.Implementations;
 
 public class ProductRepository : RepositoryBase<Product>, IProductRepository
 {
-    public ProductRepository(AppDbContext context) : base(context) { }
+    private readonly IMapper _mapper;
+    public ProductRepository(AppDbContext context, IMapper mapper) : base(context) {
+        _mapper = mapper;
+    }
 
     public ProductDto GetProductById(Guid id)
     {
-        return FindByCondition(p => p.Id == id, trackChanges: false)
-            .Select(p => new ProductDto(
-                p.Id, p.Name, p.Category, p.CaloriesPer100G,
-                p.ProteinPer100G, p.FatPer100G, p.CarbsPer100G, p.IsVerified
-            ))
+        var product = FindByCondition(p => p.Id == id, trackChanges: false)
             .FirstOrDefault();
+        if (product is null) {
+            throw new ProductNotFoundException(id);
+        }
+
+        return _mapper.Map<ProductDto>(product);
     }
 
     public IReadOnlyCollection<ProductDto> GetAllProducts()
     {
-        return FindAll(trackChanges: false)
-            .Select(p => new ProductDto(
-                p.Id, p.Name, p.Category, p.CaloriesPer100G,
-                p.ProteinPer100G, p.FatPer100G, p.CarbsPer100G, p.IsVerified
-            ))
-            .ToList()
-            .AsReadOnly();
+        var products = FindAll(trackChanges: false).ToList();
+
+        return _mapper.Map<IReadOnlyCollection<ProductDto>>(products);
     }
 
-    public IReadOnlyCollection<ProductSummaryDto> GetProductSummaries()
+    public ProductDto CreateProduct(CreateProductDto productDto)
     {
-        return FindAll(trackChanges: false)
-            .Select(p => new ProductSummaryDto(p.Id, p.Name, p.Category, p.CaloriesPer100G))
-            .ToList()
-            .AsReadOnly();
+        var productEntity = _mapper.Map<Product>(productDto);
+        Create(productEntity);
+
+        return _mapper.Map<ProductDto>(productEntity);
     }
 
-    public IReadOnlyCollection<ProductDto> GetProductsByCategory(string category)
+    public void UpdateProduct(Guid id, UpdateProductDto productDto)
     {
-        return FindByCondition(p => p.Category == category, trackChanges: false)
-            .Select(p => new ProductDto(
-                p.Id, p.Name, p.Category, p.CaloriesPer100G,
-                p.ProteinPer100G, p.FatPer100G, p.CarbsPer100G, p.IsVerified
-            ))
-            .ToList()
-            .AsReadOnly();
+        var productEntity = FindByCondition(p => p.Id == id, trackChanges: true)
+            .FirstOrDefault();
+        if (productEntity is null) {
+            throw new ProductNotFoundException(id); 
+        }
+          
+
+        _mapper.Map(productDto, productEntity);
+        Update(productEntity);
+    }
+
+    public void DeleteProduct(Guid id)
+    {
+        var productEntity = FindByCondition(p => p.Id == id, trackChanges: false)
+            .FirstOrDefault();
+        if (productEntity is null) {
+            throw new ProductNotFoundException(id);
+        }
+
+        Delete(productEntity);
     }
 }

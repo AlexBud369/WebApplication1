@@ -1,34 +1,69 @@
-﻿using WebApplication1.DTOs;
-using WebApplication1.Repositories.Contracts;
-using WebApplication1.Models;
+﻿using AutoMapper;
 using WebApplication1.Data;
+using WebApplication1.DTOs;
+using WebApplication1.Exceptions;
+using WebApplication1.Models;
+using WebApplication1.Repositories.Contracts;
 
 namespace WebApplication1.Repositories.Implementations;
 
 public class NutrientRepository : RepositoryBase<Nutrient>, INutrientRepository
 {
-    public NutrientRepository(AppDbContext context) : base(context) { }
+    private readonly IMapper _mapper;
+
+    public NutrientRepository(AppDbContext context, IMapper mapper) : base(context)
+    {
+        _mapper = mapper;
+    }
 
     public NutrientDto GetNutrientById(Guid id)
     {
-        return FindByCondition(n => n.Id == id, trackChanges: false)
-            .Select(n => new NutrientDto(n.Id, n.Name, n.Category, n.Unit))
+        var nutrient = FindByCondition(n => n.Id == id, trackChanges: false)
             .FirstOrDefault();
+        if (nutrient is null) {
+            throw new NutrientNotFoundException(id);
+        }
+
+
+        return _mapper.Map<NutrientDto>(nutrient);
     }
 
     public IReadOnlyCollection<NutrientDto> GetAllNutrients()
     {
-        return FindAll(trackChanges: false)
-            .Select(n => new NutrientDto(n.Id, n.Name, n.Category, n.Unit))
-            .ToList()
-            .AsReadOnly();
+        var nutrients = FindAll(trackChanges: false).ToList();
+
+        return _mapper.Map<IReadOnlyCollection<NutrientDto>>(nutrients);
     }
 
-    public IReadOnlyCollection<NutrientSummaryDto> GetNutrientSummaries()
+    public NutrientDto CreateNutrient(CreateNutrientDto nutrientDto)
     {
-        return FindAll(trackChanges: false)
-            .Select(n => new NutrientSummaryDto(n.Id, n.Name, n.Unit))
-            .ToList()
-            .AsReadOnly();
+        var nutrientEntity = _mapper.Map<Nutrient>(nutrientDto);
+        Create(nutrientEntity);
+
+        return _mapper.Map<NutrientDto>(nutrientEntity);
+    }
+
+    public void UpdateNutrient(Guid id, UpdateNutrientDto nutrientDto)
+    {
+        var nutrientEntity = FindByCondition(n => n.Id == id, trackChanges: true)
+            .FirstOrDefault();
+        if (nutrientEntity is null){
+            throw new NutrientNotFoundException(id);
+        }
+
+
+        _mapper.Map(nutrientDto, nutrientEntity);
+        Update(nutrientEntity);
+    }
+
+    public void DeleteNutrient(Guid id)
+    {
+        var nutrientEntity = FindByCondition(n => n.Id == id, trackChanges: false)
+            .FirstOrDefault();
+        if (nutrientEntity is null) {
+            throw new NutrientNotFoundException(id);
+        }
+
+        Delete(nutrientEntity);
     }
 }

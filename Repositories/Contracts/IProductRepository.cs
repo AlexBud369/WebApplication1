@@ -6,6 +6,8 @@ public interface IProductRepository : IRepositoryBase<Models.Product>
 {
     ProductDto GetProductById(Guid id);
     IReadOnlyCollection<ProductDto> GetAllProducts();
-    IReadOnlyCollection<ProductSummaryDto> GetProductSummaries();
-    IReadOnlyCollection<ProductDto> GetProductsByCategory(string category);
+
+    ProductDto CreateProduct(CreateProductDto productDto);
+    void UpdateProduct(Guid id, UpdateProductDto productDto);
+    void DeleteProduct(Guid id);
 }

@@ -6,5 +6,7 @@ public interface IUserRepository : IRepositoryBase<Models.User>
 {
     UserDto GetUserById(Guid id);
     IReadOnlyCollection<UserDto> GetAllUsers();
-    IReadOnlyCollection<UserSummaryDto> GetUserSummaries();
+    UserDto CreateUser(CreateUserDto userDto);
+    void UpdateUser(Guid id, UpdateUserDto userDto);
+    void DeleteUser(Guid id);
 }
