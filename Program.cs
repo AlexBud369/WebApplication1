@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
 using WebApplication1.Data;
 using WebApplication1.Mapping;
+using WebApplication1.Middleware;
 using WebApplication1.Repositories.Contracts;
 using WebApplication1.Repositories.Implementations;
 
@@ -36,6 +37,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseHttpsRedirection();
 app.UseAuthorization();
