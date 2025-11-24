@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
+using WebApplication1.Extensions;
 
 namespace WebApplication1.Controllers;
 
@@ -9,10 +11,17 @@ namespace WebApplication1.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductRepository _productRepository;
+    private readonly IValidator<CreateProductDto> _createProductValidator;
+    private readonly IValidator<UpdateProductDto> _updateProductValidator;
 
-    public ProductsController(IProductRepository productRepository)
+    public ProductsController(
+        IProductRepository productRepository,
+        IValidator<CreateProductDto> createProductValidator,
+        IValidator<UpdateProductDto> updateProductValidator)
     {
         _productRepository = productRepository;
+        _createProductValidator = createProductValidator;
+        _updateProductValidator = updateProductValidator;
     }
 
     [HttpGet]
@@ -38,6 +47,11 @@ public class ProductsController : ControllerBase
             return BadRequest("ProductForCreationDto object is null");
         }
             
+        var validationResult = _createProductValidator.Validate(productDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
 
         var createdProduct = _productRepository.CreateProduct(productDto);
 
@@ -51,6 +65,11 @@ public class ProductsController : ControllerBase
             return BadRequest("ProductForUpdateDto object is null");
         }
             
+        var validationResult = _updateProductValidator.Validate(productDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
 
         _productRepository.UpdateProduct(id, productDto);
 

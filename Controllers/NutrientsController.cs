@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
+using WebApplication1.Extensions;
 
 namespace WebApplication1.Controllers;
 
@@ -10,13 +12,25 @@ public class NutrientsController : ControllerBase
 {
     private readonly INutrientRepository _nutrientRepository;
     private readonly IProductNutrientRepository _productNutrientRepository;
+    private readonly IValidator<CreateNutrientDto> _createNutrientValidator;
+    private readonly IValidator<UpdateNutrientDto> _updateNutrientValidator;
+    private readonly IValidator<CreateProductNutrientDto> _createProductNutrientValidator;
+    private readonly IValidator<UpdateProductNutrientDto> _updateProductNutrientValidator;
 
     public NutrientsController(
         INutrientRepository nutrientRepository,
-        IProductNutrientRepository productNutrientRepository)
+        IProductNutrientRepository productNutrientRepository,
+        IValidator<CreateNutrientDto> createNutrientValidator,
+        IValidator<UpdateNutrientDto> updateNutrientValidator,
+        IValidator<CreateProductNutrientDto> createProductNutrientValidator,
+        IValidator<UpdateProductNutrientDto> updateProductNutrientValidator)
     {
         _nutrientRepository = nutrientRepository;
         _productNutrientRepository = productNutrientRepository;
+        _createNutrientValidator = createNutrientValidator;
+        _updateNutrientValidator = updateNutrientValidator;
+        _createProductNutrientValidator = createProductNutrientValidator;
+        _updateProductNutrientValidator = updateProductNutrientValidator;
     }
 
     [HttpGet]
@@ -49,7 +63,13 @@ public class NutrientsController : ControllerBase
         if (nutrientDto is null) {
             return BadRequest("NutrientForCreationDto object is null");
         }
-            
+           
+
+        var validationResult = _createNutrientValidator.Validate(nutrientDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
 
         var createdNutrient = _nutrientRepository.CreateNutrient(nutrientDto);
 
@@ -62,7 +82,13 @@ public class NutrientsController : ControllerBase
         if (nutrientDto is null) {
             return BadRequest("NutrientForUpdateDto object is null");
         }
-            
+           
+
+        var validationResult = _updateNutrientValidator.Validate(nutrientDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
 
         _nutrientRepository.UpdateNutrient(id, nutrientDto);
 
@@ -77,13 +103,20 @@ public class NutrientsController : ControllerBase
         return NoContent();
     }
 
-
     [HttpPost("product-nutrients")]
     public IActionResult CreateProductNutrient([FromBody] CreateProductNutrientDto productNutrientDto)
     {
         if (productNutrientDto is null) {
             return BadRequest("ProductNutrientForCreationDto object is null");
         }
+           
+        var validationResult = _createProductNutrientValidator.Validate(productNutrientDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+
+            return UnprocessableEntity(ModelState);
+        }
+
         var createdProductNutrient = _productNutrientRepository.CreateProductNutrient(productNutrientDto);
 
         return CreatedAtAction(
@@ -98,6 +131,13 @@ public class NutrientsController : ControllerBase
         if (productNutrientDto is null) {
             return BadRequest("ProductNutrientForUpdateDto object is null");
         }
+            
+        var validationResult = _updateProductNutrientValidator.Validate(productNutrientDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
+
         _productNutrientRepository.UpdateProductNutrient(id, productNutrientDto);
 
         return NoContent();

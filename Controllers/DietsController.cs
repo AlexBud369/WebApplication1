@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.DTOs;
 using WebApplication1.Repositories.Contracts;
+using WebApplication1.Extensions;
 
 namespace WebApplication1.Controllers;
 
@@ -9,10 +11,17 @@ namespace WebApplication1.Controllers;
 public class DietsController : ControllerBase
 {
     private readonly IDietRepository _dietRepository;
+    private readonly IValidator<CreateDietDto> _createDietValidator;
+    private readonly IValidator<UpdateDietDto> _updateDietValidator;
 
-    public DietsController(IDietRepository dietRepository)
+    public DietsController(
+        IDietRepository dietRepository,
+        IValidator<CreateDietDto> createDietValidator,
+        IValidator<UpdateDietDto> updateDietValidator)
     {
         _dietRepository = dietRepository;
+        _createDietValidator = createDietValidator;
+        _updateDietValidator = updateDietValidator;
     }
 
     [HttpGet]
@@ -47,6 +56,12 @@ public class DietsController : ControllerBase
         }
             
 
+        var validationResult = _createDietValidator.Validate(dietDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
+
         var createdDiet = _dietRepository.CreateDiet(dietDto);
 
         return CreatedAtAction(nameof(GetDiet), new { id = createdDiet.Id }, createdDiet);
@@ -58,7 +73,13 @@ public class DietsController : ControllerBase
         if (dietDto is null) {
             return BadRequest("DietForUpdateDto object is null");
         }
-            
+           
+
+        var validationResult = _updateDietValidator.Validate(dietDto);
+        if (!validationResult.IsValid) {
+            validationResult.AddToModelState(ModelState);
+            return UnprocessableEntity(ModelState);
+        }
 
         _dietRepository.UpdateDiet(id, dietDto);
 
