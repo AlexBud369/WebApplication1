@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text.Json;
 using WebApplication1.Exceptions;
 
@@ -15,16 +16,16 @@ public class ExceptionHandlingMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public void Invoke(HttpContext context)
     {
-        try{
-            await _next(context);
+        try {
+            _next(context);
         } catch (Exception ex) {
-            await HandleExceptionAsync(context, ex);
+            HandleException(context, ex);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static void HandleException(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
@@ -38,9 +39,11 @@ public class ExceptionHandlingMiddleware
         {
             NotFoundException => (int)HttpStatusCode.NotFound,
             BadRequestException => (int)HttpStatusCode.BadRequest,
+            ValidationException => (int)HttpStatusCode.UnprocessableEntity,
             _ => (int)HttpStatusCode.InternalServerError
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        var jsonResponse = JsonSerializer.Serialize(response);
+        context.Response.WriteAsync(jsonResponse).GetAwaiter().GetResult();
     }
 }
