@@ -21,7 +21,7 @@ public class MealRepository : RepositoryBase<Meal>, IMealRepository
     public MealDto GetMealById(Guid id)
     {
         var meal = FindByCondition(m => m.Id == id, trackChanges: false)
-            .FirstOrDefault();
+             .FirstOrDefault();
         if (meal is null) {
             throw new MealNotFoundException(id);
         }
