@@ -6,6 +6,9 @@ namespace WebApplication1.Validators.UserValidators;
 
 public class CreateUserValidator : AbstractValidator<CreateUserDto>
 {
+   
+
+
     public CreateUserValidator()
     {
         RuleFor(x => x.Email)

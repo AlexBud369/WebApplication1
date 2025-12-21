@@ -16,16 +16,19 @@ public class ExceptionHandlingMiddleware
         _logger = logger;
     }
 
-    public void Invoke(HttpContext context)
+    public async Task InvokeAsync(HttpContext context)
     {
-        try  {
-            _next(context);
-        } catch (Exception ex) {
-            HandleException(context, ex);
+        try
+        {
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static void HandleException(HttpContext context, Exception exception)
+    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
@@ -44,6 +47,6 @@ public class ExceptionHandlingMiddleware
         };
 
         var jsonResponse = JsonSerializer.Serialize(response);
-        context.Response.WriteAsync(jsonResponse).GetAwaiter().GetResult();
+        await context.Response.WriteAsync(jsonResponse);
     }
 }

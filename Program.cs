@@ -26,6 +26,9 @@ builder.Services.AddScoped<IMealRepository, MealRepository>();
 builder.Services.AddScoped<INutrientRepository, NutrientRepository>();
 builder.Services.AddScoped<IMealProductRepository, MealProductRepository>();
 builder.Services.AddScoped<IProductNutrientRepository, ProductNutrientRepository>();
+builder.Services.AddScoped<IUserStatsRepository, UserStatsRepository>();
+builder.Services.AddScoped<IProductStatsRepository, ProductStatsRepository>();
+builder.Services.AddScoped<INutritionStatsRepository, NutritionStatsRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
