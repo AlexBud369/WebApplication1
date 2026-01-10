@@ -20,10 +20,12 @@ public class MealProductRepository : RepositoryBase<MealProduct>, IMealProductRe
     public IReadOnlyCollection<MealProductDto> GetMealProductsByMealId(Guid mealId)
     {
         var mealProducts = FindByCondition(mp => mp.MealId == mealId, trackChanges: false)
-            .Include(mp => mp.Product)
-            .ToList();
+         .Include(mp => mp.Product) 
+         .ToList();
 
-        return _mapper.Map<IReadOnlyCollection<MealProductDto>>(mealProducts);
+        var mealProductDtos = _mapper.Map<List<MealProductDto>>(mealProducts);
+
+        return mealProductDtos.AsReadOnly();
     }
 
     public MealProductDto GetMealProductById(Guid id)
@@ -41,6 +43,18 @@ public class MealProductRepository : RepositoryBase<MealProduct>, IMealProductRe
 
     public MealProductDto CreateMealProduct(CreateMealProductDto mealProductDto)
     {
+        var mealExists = _context.Meals.Any(m => m.Id == mealProductDto.MealId);
+        if (!mealExists)
+        {
+            throw new InvalidRequestException($"Meal with id {mealProductDto.MealId} does not exist");
+        }
+
+        var productExists = _context.Products.Any(p => p.Id == mealProductDto.ProductId);
+        if (!productExists)
+        {
+            throw new InvalidRequestException($"Product with id {mealProductDto.ProductId} does not exist");
+        }
+
         var mealProductEntity = _mapper.Map<MealProduct>(mealProductDto);
         Create(mealProductEntity);
 

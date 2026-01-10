@@ -44,6 +44,12 @@ public class DietRepository : RepositoryBase<Diet>, IDietRepository
 
     public DietDto CreateDiet(CreateDietDto dietDto)
     {
+        var userExists = _context.Users.Any(u => u.Id == dietDto.UserId);
+        if (!userExists)
+        {
+            throw new InvalidRequestException($"User with id {dietDto.UserId} does not exist");
+        }
+
         var dietEntity = _mapper.Map<Diet>(dietDto);
         Create(dietEntity);
 

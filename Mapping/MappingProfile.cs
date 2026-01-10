@@ -32,18 +32,24 @@ public class MappingProfile : Profile
         CreateMap<UpdateNutrientDto, Nutrient>();
 
         CreateMap<MealProduct, MealProductDto>()
-            .ForMember(dest => dest.ProductName,
-                opt => opt.MapFrom(src => src.Product.Name))
-            .ForMember(dest => dest.TotalCalories,
-                opt => opt.MapFrom(src => src.Product.CaloriesPer100G * src.QuantityGrams / 100));
+            .ConstructUsing(src => new MealProductDto(
+                src.Id,
+                src.MealId,
+                src.ProductId,
+                src.QuantityGrams,
+                src.Product != null ? src.Product.Name : string.Empty,
+                src.Product != null ? src.Product.CaloriesPer100G * src.QuantityGrams / 100 : 0));
         CreateMap<CreateMealProductDto, MealProduct>();
         CreateMap<UpdateMealProductDto, MealProduct>();
 
         CreateMap<ProductNutrient, ProductNutrientDto>()
-            .ForMember(dest => dest.NutrientName,
-                opt => opt.MapFrom(src => src.Nutrient.Name))
-            .ForMember(dest => dest.Unit,
-                opt => opt.MapFrom(src => src.Nutrient.Unit));
+           .ConstructUsing(src => new ProductNutrientDto(
+               src.Id,
+               src.ProductId,
+               src.NutrientId,
+               src.Nutrient != null ? src.Nutrient.Name : string.Empty,
+               src.AmountPer100g,
+               src.Nutrient != null ? src.Nutrient.Unit : string.Empty));
         CreateMap<CreateProductNutrientDto, ProductNutrient>();
         CreateMap<UpdateProductNutrientDto, ProductNutrient>(); 
     }

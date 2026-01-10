@@ -41,6 +41,18 @@ public class ProductNutrientRepository : RepositoryBase<ProductNutrient>, IProdu
 
     public ProductNutrientDto CreateProductNutrient(CreateProductNutrientDto productNutrientDto)
     {
+        var productExists = _context.Products.Any(p => p.Id == productNutrientDto.ProductId);
+        if (!productExists)
+        {
+            throw new InvalidRequestException($"Product with id {productNutrientDto.ProductId} does not exist");
+        }
+
+        var nutrientExists = _context.Nutrients.Any(n => n.Id == productNutrientDto.NutrientId);
+        if (!nutrientExists)
+        {
+            throw new InvalidRequestException($"Nutrient with id {productNutrientDto.NutrientId} does not exist");
+        }
+
         var productNutrientEntity = _mapper.Map<ProductNutrient>(productNutrientDto);
         Create(productNutrientEntity);
 

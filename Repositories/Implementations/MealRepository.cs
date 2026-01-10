@@ -40,6 +40,12 @@ public class MealRepository : RepositoryBase<Meal>, IMealRepository
 
     public MealDto CreateMeal(CreateMealDto mealDto)
     {
+        var dietExists = _context.Diets.Any(d => d.Id == mealDto.DietId);
+        if (!dietExists)
+        {
+            throw new InvalidRequestException($"Diet with id {mealDto.DietId} does not exist");
+        }
+
         var mealEntity = _mapper.Map<Meal>(mealDto);
         Create(mealEntity);
 
